@@ -6,9 +6,11 @@ namespace LMDb.Services
     public class FilmService
     {
         private readonly string _filePath = Path.Combine("Data", "films.json"); // Path relative to execution dir
-        private List<Film> _films;
-        private int _nextId = 1;
+        private List<Film> _films; // holds films in memory while app runs
+        private int _nextId = 1; // tracks next available id for new films
 
+        // CONSTRUCTOR
+        // loads films from file where service is created; determines starting ids for new films
         public FilmService()
         {
             _films = LoadFilmsFromFile();
@@ -19,6 +21,7 @@ namespace LMDb.Services
             }
         }
 
+        #region --- CRUDs ---
         // READ ALL
         public List<Film> GetAllFilms()
         {
@@ -71,8 +74,9 @@ namespace LMDb.Services
             SaveChangesToFile();
             return true;
         }
+        #endregion
 
-        // --- Helper Methods for File I/O ---
+        #region --- Helper Methods for File I/O ---
 
         private List<Film> LoadFilmsFromFile()
         {
@@ -127,5 +131,7 @@ namespace LMDb.Services
                 Console.WriteLine($"Access denied, PUNK. Cannot write to {_filePath}: {ex.Message}");
             }
         }
+        #endregion
+
     }
 }
