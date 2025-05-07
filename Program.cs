@@ -5,7 +5,6 @@ namespace LMDb
 {
     class Program
     {
-        // Instantiate the FilmService - NOTE: This is where DI will be useful later!
         private static readonly FilmService _filmService = new FilmService(); // create instance of FilmService via direct instantiation [new FilmService()]
 
         static void Main(string[] args)
@@ -62,6 +61,7 @@ namespace LMDb
             Console.Write("Select an option...");
         }
 
+        #region Helper methods
         static void ListAllFilms()
         {
             Console.WriteLine("\n--- All Films ---");
@@ -114,15 +114,22 @@ namespace LMDb
             newFilm.Director = Console.ReadLine();
 
             Console.Write("Enter Year: ");
-            // Variable 'year' is declared via 'out' in the TryParse within the loop condition.
-            // It will be in scope after the loop and will hold the successfully parsed value.
-            int year;
-            while (!int.TryParse(Console.ReadLine(), out year) || year < 1888 || year > DateTime.Now.Year + 5)
+            int yearValue;
+            // loop until valid integer year is entered within the specified range.
+            while (true)
             {
-                Console.WriteLine($"Invalid year. Please enter a valid year (e.g., between 1888 and {DateTime.Now.Year + 5}).");
-                Console.Write("Enter Year: ");
+                string? input = Console.ReadLine();
+                if (int.TryParse(input, out yearValue) && yearValue >= 1888 && yearValue <= DateTime.Now.Year + 5)
+                {
+                    break; // valid input, exit loop
+                }
+                else
+                {
+                    Console.WriteLine($"Invalid year. Please enter a valid year (e.g., between 1888 and {DateTime.Now.Year + 5}).");
+                    Console.Write("Enter Year: ");
+                }
             }
-            newFilm.Year = year; // This is the crucial line that was missing.
+            newFilm.Year = yearValue; // Assign the validated year.
 
             var addedFilm = _filmService.AddFilm(newFilm);
             Console.WriteLine($"Film added successfully with ID: {addedFilm.Id}");
@@ -145,42 +152,50 @@ namespace LMDb
                 return;
             }
 
-            Console.WriteLine($"Updating Film: {existingFilm.Title}");
-            var updatedFilm = new Film { Id = id }; // new film obj with same ID as user entered
+            Console.WriteLine($"Updating Film: ID {existingFilm.Id}, Title: {existingFilm.Title}");
+            var updatedFilm = new Film
+            {
+                Id = existingFilm.Id, // keep the original ID
+                Title = existingFilm.Title, // default to existing values
+                Director = existingFilm.Director,
+                Year = existingFilm.Year
+            };
 
-            Console.WriteLine($"Enter new Title (or leave blank to keep '{existingFilm.Title})'");
+            Console.WriteLine($"Enter new Title (or leave blank to keep '{existingFilm.Title}')");
             string? newTitle = Console.ReadLine();
             updatedFilm.Title = string.IsNullOrWhiteSpace(newTitle) ? existingFilm.Title : newTitle;
 
-            Console.WriteLine($"Enter new Director (or leave blank to keep '{existingFilm.Director})'");
+            Console.WriteLine($"Enter new Director (or leave blank to keep '{existingFilm.Director}')");
             string? newDirector = Console.ReadLine();
             updatedFilm.Director = string.IsNullOrWhiteSpace(newDirector) ? existingFilm.Director : newDirector;
 
-            Console.WriteLine($"Eneter new Year (or leave blank to keep '{existingFilm.Year}')");
-            string? yearInput = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(yearInput))
+            Console.Write($"Enter new Year (current: '{existingFilm.Year}', leave blank to keep): ");
+            string? yearInputStr = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(yearInputStr))
             {
-                updatedFilm.Year = existingFilm.Year; // user left blank; keep existing year
-            }
-            else
-            {
-                while (!int.TryParse(yearInput, out int year) || year < 1888 || year > DateTime.Now.Year + 5)
+                int newYearValue;
+                while (true)
                 {
-                    Console.WriteLine($"Invalid year. Palese enter a valid year (e.g., between 1888 and {{DateTime.Now.Year + 5}}) or leave blank to keep current value.");
-                    Console.Write("Enter new Year: ");
-                    yearInput = Console.ReadLine();
-                    if (string.IsNullOrWhiteSpace(yearInput)) // allow user to exit loop by leaving blank
+                    if (int.TryParse(yearInputStr, out newYearValue) && newYearValue >= 1888 && newYearValue <= DateTime.Now.Year + 5)
                     {
-                        updatedFilm.Year = existingFilm.Year;
-                        break; // exit while loop
+                        updatedFilm.Year = newYearValue;
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Invalid year. Please enter a valid year (e.g., between 1888 and {DateTime.Now.Year + 5}) or leave blank.");
+                        Console.Write("Enter new Year: ");
+                        yearInputStr = Console.ReadLine();
+                        if (string.IsNullOrWhiteSpace(yearInputStr)) // allow to skip update here
+                        {
+                            break; // keep original year if blank is entered in the re-prompt
+                        }
                     }
                 }
-                if (int.TryParse(yearInput, out int parsedYear))
-                {
-                    updatedFilm.Year = parsedYear; // assign only if successfully parsed
-                }
             }
-            if(_filmService.UpdateFilm(updatedFilm))
+            // else, updatedFilmData.Year retains existingFilm.Year
+
+            if (_filmService.UpdateFilm(updatedFilm))
             {
                 Console.WriteLine("Film updated successfully.");
             }
@@ -228,4 +243,5 @@ namespace LMDb
             }
         }
     }
+    #endregion
 }
