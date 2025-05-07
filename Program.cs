@@ -52,13 +52,13 @@ namespace LMDb
 
         static void ShowMenu()
         {
-            Console.WriteLine("\n---Film Menu ---");
+            Console.WriteLine("\n--- LMDb Film Menu ---");
             Console.WriteLine("1. List All Films");
             Console.WriteLine("2. View Film Details");
             Console.WriteLine("3. Add New Film");
             Console.WriteLine("4. Update Film");
             Console.WriteLine("5. Delete Film");
-            Console.WriteLine("Q. Quit)");
+            Console.WriteLine("Q. Quit");
             Console.Write("Select an option...");
         }
 
@@ -73,7 +73,7 @@ namespace LMDb
             }
             foreach (var film in films)
             {
-                Console.WriteLine(film); // Uses the ToString() override in Film.cs
+                Console.WriteLine(film); // uses the ToString() override in Film.cs
             }
         }
 
@@ -113,9 +113,16 @@ namespace LMDb
             Console.WriteLine("Enter Director: ");
             newFilm.Director = Console.ReadLine();
 
-            Console.WriteLine("Enter Year: ");
-            // int validation
-            newFilm.Year = int.Parse(Console.ReadLine()); // might break...
+            Console.Write("Enter Year: ");
+            // Variable 'year' is declared via 'out' in the TryParse within the loop condition.
+            // It will be in scope after the loop and will hold the successfully parsed value.
+            int year;
+            while (!int.TryParse(Console.ReadLine(), out year) || year < 1888 || year > DateTime.Now.Year + 5)
+            {
+                Console.WriteLine($"Invalid year. Please enter a valid year (e.g., between 1888 and {DateTime.Now.Year + 5}).");
+                Console.Write("Enter Year: ");
+            }
+            newFilm.Year = year; // This is the crucial line that was missing.
 
             var addedFilm = _filmService.AddFilm(newFilm);
             Console.WriteLine($"Film added successfully with ID: {addedFilm.Id}");
@@ -141,11 +148,11 @@ namespace LMDb
             Console.WriteLine($"Updating Film: {existingFilm.Title}");
             var updatedFilm = new Film { Id = id }; // new film obj with same ID as user entered
 
-            Console.WriteLine($"Enter new Title (or leave blank to keep '{existingFilm.Title})");
+            Console.WriteLine($"Enter new Title (or leave blank to keep '{existingFilm.Title})'");
             string? newTitle = Console.ReadLine();
             updatedFilm.Title = string.IsNullOrWhiteSpace(newTitle) ? existingFilm.Title : newTitle;
 
-            Console.WriteLine($"Enter new Director (or leave blank to keep '{existingFilm.Director})");
+            Console.WriteLine($"Enter new Director (or leave blank to keep '{existingFilm.Director})'");
             string? newDirector = Console.ReadLine();
             updatedFilm.Director = string.IsNullOrWhiteSpace(newDirector) ? existingFilm.Director : newDirector;
 
