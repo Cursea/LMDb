@@ -1,4 +1,5 @@
 ﻿using LMDb.Models;
+using System.Text.Json;
 
 namespace LMDb.Services
 {
@@ -61,7 +62,7 @@ namespace LMDb.Services
         public bool DeleteFilm(int id)
         {
             var filmToRemove = _films.FirstOrDefault(f => f.Id == id);
-            if(filmToRemove == null)
+            if (filmToRemove == null)
             {
                 return false;
             }
@@ -73,6 +74,58 @@ namespace LMDb.Services
 
         // --- Helper Methods for File I/O ---
 
+        private List<Film> LoadFilmsFromFile()
+        {
+            if (!File.Exists(_filePath))
+            {
+                // If the file doesn't exist, return an empty list
+                // It will be created on the first save.
+                return new List<Film>();
+            }
 
+            try
+            {
+                string json = File.ReadAllText(_filePath);
+                // Handle empty or invalid JSON file
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    return new List<Film>();
+                }
+                // Ensure deserialisation handles potential nulls
+                var films = JsonSerializer.Deserialize<List<Film>>(json);
+                return films ?? new List<Film>(); // return empty list if deserialisation results in null
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine($"Error accessing file at {_filePath}: {ex.Message}");
+                return new List<Film>();
+            }
+        }
+
+        private void SaveChangesToFile()
+        {
+            try
+            {
+                // ensure directory exists
+                var directory = Path.GetDirectoryName(_filePath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                // serialize with formatting for readability
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                string json = JsonSerializer.Serialize(_films, options);
+                File.WriteAllText(_filePath, json);
+            }
+            catch (IOException ex)
+            {
+                Console.WriteLine($"Error saving data to {_filePath}: {ex.Message}");
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Console.WriteLine($"Access denied, PUNK. Cannot write to {_filePath}: {ex.Message}");
+            }
+        }
     }
 }
