@@ -1,12 +1,13 @@
-﻿using LMDb.Models;
+﻿using LMDb.Interfaces;
+using LMDb.Models;
 using System.Text.Json;
 
 namespace LMDb.Services
 {
-    public class FilmService
+    public class FilmService : IFilmService
     {
         private readonly string _filePath = Path.Combine("Data", "films.json"); // Path relative to execution dir
-        private List<Film> _films; // holds films in memory while app runs
+        private List<Film> _films; // holds films in memory while app runs (\LMDb\bin\Debug\net8.0\Data)
         private int _nextId = 1; // tracks next available id for new films
 
         // CONSTRUCTOR

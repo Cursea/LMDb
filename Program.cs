@@ -1,11 +1,18 @@
 ﻿using LMDb.Models;
-using LMDb.Services;
+using LMDb.Interfaces;
 
 namespace LMDb
 {
     class Program
     {
-        private static readonly FilmService _filmService = new FilmService(); // create instance of FilmService via direct instantiation [new FilmService()]
+        // no longer using a concrete class of FilmService in Program
+        //private static readonly FilmService _filmService = new FilmService(); // create instance of FilmService via direct instantiation [new FilmService()]
+        private readonly IFilmService _filmService;
+
+        public FilmService(IFilmService filmService)
+        {
+            _filmService = filmService;
+        }
 
         static void Main(string[] args)
         {
