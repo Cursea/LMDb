@@ -6,13 +6,18 @@ namespace LMDb
 {
     class Program
     {
-        //private static readonly FilmService _filmService = new FilmService(); // create instance of FilmService via direct instantiation [new FilmService()]
-        private static IFilmService _filmService;
+        // Now declared but not initialized here (also uses concrete class FilmService instead of interface IFilmService, for speed [CA1859])
+        private static readonly FilmService _filmService;
+
+        // Program static constructor (run only once, before 1st instance of class is created/static members referenced)
+        static Program()
+        {
+            // initialization of static member..
+            _filmService = new FilmService();
+        }
 
         static void Main(string[] args)
         {
-            _filmService = new FilmService();
-
             Console.WriteLine("LocalMovieDatabase (LMDb), where films float in the ether");
 
             bool running = true;
