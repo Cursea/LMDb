@@ -6,8 +6,8 @@ namespace LMDb
 {
     class Program
     {
-        // Now declared but not initialized here (also uses concrete class FilmService instead of interface IFilmService, for speed [CA1859])
-        private static readonly FilmService _filmService;
+        // Now declared but not initialized here
+        private static readonly IFilmService _filmService;
 
         // Program static constructor (run only once, before 1st instance of class is created/static members referenced)
         static Program()
